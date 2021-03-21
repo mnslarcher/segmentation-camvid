@@ -1,0 +1,29 @@
+# conda env create --prefix ./env --file environment.yml  # create the environment
+# conda activate ./env  # activate the environment
+# conda env update --prefix ./env --file environment.yml --prune  # update the environment
+# conda deactivate  # deactivate the environment
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - albumentations
+  - black
+  - cudatoolkit=10.2
+  - flake8
+  - ipykernel
+  - ipywidgets
+  - matplotlib
+  - mypy
+  - notebook
+  - numpy
+  - pip
+  - pre_commit
+  - python>=3.6,<3.7
+  - pytorch=1.8.0
+  - torchvision=0.9.0
+  - pytorch-lightning
+  - tqdm
+  - pip:
+    - opencv-python
+    - pytorch_toolbelt
+    - segmentation-models-pytorch==0.1.3
