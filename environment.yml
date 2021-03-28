@@ -12,6 +12,7 @@ dependencies:
   - flake8
   - ipykernel
   - ipywidgets
+  - isort
   - matplotlib
   - mypy
   - notebook
@@ -21,9 +22,9 @@ dependencies:
   - python>=3.6,<3.7
   - pytorch=1.8.0
   - torchvision=0.9.0
-  - pytorch-lightning
+  - pytorch-lightning=1.2.5
   - tqdm
   - pip:
     - opencv-python
-    - pytorch_toolbelt
+    - pytorch_toolbelt==0.4.2
     - segmentation-models-pytorch==0.1.3
