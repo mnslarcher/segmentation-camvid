@@ -1,0 +1,29 @@
+bbox_coco_path: /opt/ml/input/data/bbox_coco/coco.json
+
+seg_coco_path: /opt/ml/input/data/seg_coco/2021-03-29_dataset_2_sem_seg.json
+
+images_dir: /opt/ml/input/data/images
+
+output_dir: /opt/ml/checkpoints
+
+bbox_category: transformer
+
+seg_categories:
+ - oil_leaking
+
+val_size: 0.1
+
+test_size: 0.1
+
+random_state: 42
+
+shuffle: true
+
+ignore_missing: false
+
+transforms:
+  transform:
+    __class_fullname__: albumentations.core.composition.Compose
+    transforms:
+      - __class_fullname__: albumentations.augmentations.transforms.LongestMaxSize
+        max_size: 1024

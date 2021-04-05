@@ -1,0 +1,135 @@
+seed: 42
+
+model:
+  model:
+    type: segmentation_models_pytorch.DeepLabV3Plus
+    encoder_weights: noisy-student
+    encoder_name: timm-efficientnet-b3
+    encoder_depth: 5
+    encoder_output_stride: 16
+    decoder_channels: 256
+    decoder_atrous_rates:
+      - 12
+      - 24
+      - 36
+    in_channels: 3
+    classes: 1
+    activation: sigmoid
+    upsampling: 4
+    aux_params: null
+
+  optimizer:
+    type: torch.optim.SGD
+    lr: 0.01
+    momentum: 0.9
+    weight_decay: 0
+    nesterov: false
+
+  loss:
+    type: pytorch_toolbelt.losses.DiceLoss
+    mode: binary
+    classes: null
+    log_loss: false
+    from_logits: false
+    smooth: 0.0
+    ignore_index: null  # index of the category of pixels to be ignored
+
+  metrics:
+    - type:  torchmetrics.IoU
+      num_classes: 2
+      ignore_index: null
+    - type:  torchmetrics.F1
+      num_classes: 2
+
+  scheduler:
+    scheduler:
+      type: torch.optim.lr_scheduler.OneCycleLR
+      max_lr: 0.2
+      total_steps: 30000
+
+    interval: step
+
+    frequency: 1
+
+trainer:
+  type: pytorch_lightning.Trainer
+  default_root_dir: s3://enel-noprod-glin-ap35001-odin1/oil-leaking/
+  gpus: -1
+  gradient_clip_val: 5.0
+  log_gpu_memory: true
+  max_steps: 30000
+
+callbacks:
+  - type: pytorch_lightning.callbacks.ModelCheckpoint
+    filename: "{epoch}-{step}-{val_loss:.2f}"
+    monitor: val_loss
+    verbose: true
+    mode: min
+    save_top_k: 1
+  - type: pytorch_lightning.callbacks.LearningRateMonitor
+    log_momentum: true
+  - type: pytorch_lightning.callbacks.EarlyStopping
+    monitor: val_loss
+    min_delta: 0.0
+    patience: 100
+    mode: min
+
+logger:
+  type: bool
+  x: true
+
+data:
+  data_dir: /opt/ml/input/data/data
+  batch_size: 8
+  num_workers: 6
+  pin_memory: true
+
+transforms:
+    train:
+      transform:
+        __class_fullname__: albumentations.core.composition.Compose
+        transforms:
+          - __class_fullname__: albumentations.augmentations.transforms.LongestMaxSize
+            max_size: 320
+          - __class_fullname__: albumentations.augmentations.transforms.PadIfNeeded
+            min_height: 320
+            min_width: 320
+            border_mode: 0  # cv2.BORDER_CONSTANT
+            value: 0.0
+            mask_value: 0
+          - __class_fullname__: albumentations.augmentations.transforms.HorizontalFlip
+            p: 0.5
+          - __class_fullname__: albumentations.augmentations.transforms.Normalize
+          - __class_fullname__: albumentations.pytorch.transforms.ToTensorV2
+            transpose_mask: true
+
+    val:
+      transform:
+        __class_fullname__: albumentations.core.composition.Compose
+        transforms:
+          - __class_fullname__: albumentations.augmentations.transforms.LongestMaxSize
+            max_size: 320
+          - __class_fullname__: albumentations.augmentations.transforms.PadIfNeeded
+            min_height: 320
+            min_width: 320
+            border_mode: 0  # cv2.BORDER_CONSTANT
+            value: 0
+            mask_value: 0
+          - __class_fullname__: albumentations.augmentations.transforms.Normalize
+          - __class_fullname__: albumentations.pytorch.transforms.ToTensorV2
+            transpose_mask: true
+    test:
+      transform:
+        __class_fullname__: albumentations.core.composition.Compose
+        transforms:
+          - __class_fullname__: albumentations.augmentations.transforms.LongestMaxSize
+            max_size: 320
+          - __class_fullname__: albumentations.augmentations.transforms.PadIfNeeded
+            min_height: 320
+            min_width: 320
+            border_mode: 0  # cv2.BORDER_CONSTANT
+            value: 0
+            mask_value: 0
+          - __class_fullname__: albumentations.augmentations.transforms.Normalize
+          - __class_fullname__: albumentations.pytorch.transforms.ToTensorV2
+            transpose_mask: true
